@@ -1,5 +1,5 @@
 # EthgineLite
-A metadata-driven product data system with a built-in business rules engine and communications protocol.
+A proof-of-concept business rules engine for the Ethereum platform that is inherently metadata-driven.
 
 # Notices
 Currently, this project is under construction.  However, you can understanding its basis by reading the 
