@@ -18,11 +18,10 @@ library ConvertLib{
 	}
 
     /// @author Aaron Kendall
-    /// @notice This is just a test method
-    /// @dev Should be used really just for testing if the library has been linked to
-    /// @param amount The principal
-    /// @param conversionRate The conversion rate
-    /// @return The converted amount
+    /// @notice Not sure where I copied this from
+    /// @dev Haven't used it - don't know if it works
+    /// @param bytesString The bytes that need to be converted into a string
+    /// @return The string that was converted from the provided bytes
     function bytesToString(byte[] bytesString) public pure returns (string) {
 
         uint charCount = bytesString.length;
@@ -36,11 +35,10 @@ library ConvertLib{
     }
 
     /// @author Aaron Kendall
-    /// @notice This is just a test method
-    /// @dev Should be used really just for testing if the library has been linked to
-    /// @param amount The principal
-    /// @param conversionRate The conversion rate
-    /// @return The converted amount
+    /// @notice Copied this code snippet from a StackOverflow post from the user "eth"
+    /// @dev Haven't used it - don't know if it works
+    /// @param x The bytes32 that needs to be converted into a string
+    /// @return The string that was converted from the provided bytes32
     function bytes32ToString(bytes32 x) public pure returns (string) {
 
         bytes memory bytesString = new bytes(32);
@@ -62,11 +60,11 @@ library ConvertLib{
     }
 
     /// @author Aaron Kendall
-    /// @notice This is just a test method
-    /// @dev Should be used really just for testing if the library has been linked to
-    /// @param amount The principal
-    /// @param conversionRate The conversion rate
-    /// @return The converted amount
+    /// @notice Copied this code from Oraclize - // Copyright (c) 2015-2016 Oraclize srl, Thomas Bertani
+    /// @dev This code definitely works
+    /// @param _a The string to convert into an unsigned integer
+    /// @param _b The number of decimal places that we wish to include in the unsigned integer, with 0 meaning none
+    /// @return The unsigned integer converted from the string
     function parseInt(string _a, uint _b) internal pure returns (uint) {
 
         bytes memory bresult = bytes(_a);
@@ -91,11 +89,10 @@ library ConvertLib{
     }
 
     /// @author Aaron Kendall
-    /// @notice This is just a test method
-    /// @dev Should be used really just for testing if the library has been linked to
-    /// @param amount The principal
-    /// @param conversionRate The conversion rate
-    /// @return The converted amount
+    /// @notice Copied this code snippet from a StackOverflow post from the user "BokkyPooBah"
+    /// @dev Haven't used it - don't know if it works
+    /// @param v The unsigned integer that needs to be converted into a string
+    /// @return The string that was converted from the provided uint
     function uintToString(uint v) public pure returns (string str) {
         uint maxlength = 100;
         bytes memory reversed = new bytes(maxlength);
