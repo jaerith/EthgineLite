@@ -110,6 +110,7 @@ contract('WonkaEngine', function(accounts) {
       console.log("Current record for owner(" + accounts[0] + ") is valid?  [" + recordValid + "]");      
     });
   });
+	
   /*
    * NOTE: Only run this section if you want to see the contract return an error (i.e., the set data fails the rules)
    *
@@ -126,7 +127,5 @@ contract('WonkaEngine', function(accounts) {
       console.log("Current record for owner(" + accounts[0] + ") is valid?  [" + recordValid + "]");      
     });
    */
-	
-  });
 
 });
