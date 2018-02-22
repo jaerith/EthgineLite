@@ -8,6 +8,8 @@ A proof-of-concept business rules engine for the Ethereum platform that is inher
 * An installation of <a target="_blank" href="http://truffleframework.com/docs/">Truffle</a> and a local blockchain (like <a target="_blank" href="http://truffleframework.com/ganache/">Ganache</a>)
 * A fair amount of patience and forgiveness
 
+# The Basics
+
 ## Quick Runthrough
 
 After installing the Truffle framework and configuring starting your local blockchain, change directory to the EthgineLite repo and compile the contracts:
