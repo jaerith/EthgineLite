@@ -12,7 +12,7 @@ A proof-of-concept business rules engine for the Ethereum platform that is inher
 
 ## Quick Runthrough
 
-After installing the Truffle framework and configuring starting your local blockchain, change directory to the EthgineLite repo and compile the contracts:
+After installing the Truffle framework and configuring/starting your local blockchain, change directory to the EthgineLite repo and compile the contracts:
 
 ```
 $ truffle compile
@@ -67,7 +67,9 @@ As well as create the Rule itself:
 3.) Then, we need to populate our record (held within the contract instance for us) with the data:
 
 ```
+    instance.setValueOnRecord(accounts[0], web3.fromAscii('Title'), new String('The First Book').valueOf());
     instance.setValueOnRecord(accounts[0], web3.fromAscii('Price'), new String('0999').valueOf()); // in cents
+    instance.setValueOnRecord(accounts[0], web3.fromAscii('PageAmount'), new String('289').valueOf());
 ```
 
 4.) Finally, we execute the rules engine, using our provided RuleSet and applying it to our specified data record:
