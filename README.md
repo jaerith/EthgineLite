@@ -83,4 +83,4 @@ And we learn whether or not the data record is valid, according to our provided 
 # Notices
 
 Currently, this project is under construction.  However, you can understand its basis by reading about the 
-ideas and the general design presented in my <a target="_blank" href="http://www.infoq.com/articles/metadata-and-agile">InfoQ article</a> that talks about metadata-driven design (i.e., MDD) and business rules.
+ideas and the general design presented in my <a target="_blank" href="https://www.infoq.com/articles/mdd-creating-user-friendly-dsl">InfoQ article</a> that talks about metadata-driven design (i.e., MDD) and business rules.
