@@ -401,7 +401,6 @@ contract WonkaEngine {
 	/// @author Aaron Kendall
     /// @notice Retrieves the number of current Attributes
     /// @dev Should be used just for testing
-    /// @param idx The index of the Attribute being examined
     /// @return uint that indicates the num of current Attributes	
 	function getNumberOfAttributes() public view returns(uint) {
 		return attributes.length;
