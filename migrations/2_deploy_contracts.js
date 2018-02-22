@@ -1,5 +1,5 @@
 var ConvertLib = artifacts.require("./ConvertLib.sol");
-var WeEngine = artifacts.require("./WonkaEngine.sol");
+var WaEngine = artifacts.require("./WonkaEngine.sol");
 
 module.exports = function(deployer) {
   deployer.deploy(ConvertLib);
