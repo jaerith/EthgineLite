@@ -22,6 +22,19 @@ contract('WonkaEngine', function(accounts) {
       console.log("Name of first attribute is (" + web3.toAscii(attrName.valueOf()) + ")");
     });
   });
+  it("add a new Attribute called 'Language'", function() {
+    return WonkaEngine.deployed().then(function(instance) {
+      instance.addAttribute(web3.fromAscii('Language'), 64, 0, new String('ENG').valueOf(), true, false);
+      console.log("Added another Attribute!");
+    });
+  });
+  it("name of last Attribute should be 'Language'", function() {
+    return WonkaEngine.deployed().then(function(instance) {
+      return instance.getAttributeName.call(3);
+    }).then(function(attrName) {
+      console.log("Name of last attribute is (" + web3.toAscii(attrName.valueOf()) + ")");
+    });
+  });
   it("add the first RuleSet", function() {
     return WonkaEngine.deployed().then(function(instance) {      
       instance.addRuleSet(accounts[0], web3.fromAscii('ValidateProduct'));
@@ -49,6 +62,13 @@ contract('WonkaEngine', function(accounts) {
     }).then(function(ruleName) {
       console.log("Name of first Rule is (" + web3.toAscii(ruleName.valueOf()) + ")");
       // assert.equal(web3.toAscii(rulesetName.valueOf()), "ValidateBook", "RuleSet has the wrong name!");
+    });
+  });
+  it("get the Rule Plan", function() {
+    return WonkaEngine.deployed().then(function(instance) {
+      return instance.getRulePlan.call(accounts[0]);
+    }).then(function(rulePlan) {
+      console.log("Print out the Rule Plan: " + rulePlan.valueOf());
     });
   });
   it("add Values into current record", function() {
