@@ -36,7 +36,7 @@ library ConvertLib{
 
     /// @author Aaron Kendall
     /// @notice Copied this code snippet from a StackOverflow post from the user "eth"
-    /// @dev Haven't used it - don't know if it works
+    /// @dev Doesn't seem to work across contracts due to inflexibility when it comes to strings passed between contracts - You will the error "Type inaccessible dynamic type is not implicitly convertible to expected type]
     /// @param x The bytes32 that needs to be converted into a string
     /// @return The string that was converted from the provided bytes32
     function bytes32ToString(bytes32 x) public pure returns (string) {
