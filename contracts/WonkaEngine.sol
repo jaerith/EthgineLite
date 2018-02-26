@@ -90,6 +90,7 @@ contract WonkaEngine {
     RuleTypes constant defaultType = RuleTypes.IsEqual;
 
     address public rulesMaster;
+    uint    public attrCounter;
     uint    public ruleCounter;
 
     mapping(bytes32 => WonkaLib.WonkaAttr) private attrMap;
@@ -156,6 +157,42 @@ contract WonkaEngine {
             }));
 
         attrMap[attributes[attributes.length-1].attrName] = attributes[attributes.length-1];
+
+        attrCounter = attributes.length + 1;
+    }
+
+	/// @author Aaron Kendall
+    /// @notice This function will create an Attribute, which defines a data point that can be poulated on a user's record.  Only the RuleMaster (i.e., the contract instance's creator) can create a RuleSet for a user.
+    /// @dev An Attribute can only be defined once.
+    /// @param pAttrName The name of the new Attribute
+    /// @param pMaxLen The maximum string length of a value for this Attribute
+    /// @param pMaxNumVal The maximum numeric value for this Attribute
+    /// @param pDefVal The default value that should be given for this Attribute on every given record. (NOTE: Currently, this value is not being used.)
+    /// @param pIsStr The indicator for whether or not this Attribute is an instance of a string
+    /// @param pIsNum The indicator for whether or not this Attribute is an instance of a numeric
+    /// @return 
+    function addAttribute(bytes32 pAttrName, uint pMaxLen, uint pMaxNumVal, string pDefVal, bool pIsStr, bool pIsNum) public {
+
+        require(msg.sender == rulesMaster);
+
+        require(attrMap[pAttrName].isValue == false);
+
+        bool maxLenTrun = (pMaxLen > 0);
+
+        attributes.push(WonkaLib.WonkaAttr({
+                attrId: attrCounter++,
+                attrName: pAttrName,
+                maxLength: pMaxLen,
+                maxLengthTruncate: maxLenTrun,
+                maxNumValue: pMaxNumVal,
+                defaultValue: pDefVal,
+                isString: pIsStr,
+                isDecimal: false,
+                isNumeric: pIsNum,
+                isValue: true              
+            }));
+
+        attrMap[attributes[attributes.length-1].attrName] = attributes[attributes.length-1];
     }
 
 	/// @author Aaron Kendall
@@ -207,6 +244,31 @@ contract WonkaEngine {
                                                         targetAttr: attrMap[attrName],
                                                         ruleValue: rVal               
                                                     }));
+    }
+
+    /// @author Aaron Kendall
+    /// @notice Copied this code snippet from a StackOverflow post from the user "eth"
+    /// @dev This method cannot exist in a different library due to the inflexibility of strings passed across contracts
+    /// @param x The bytes32 that needs to be converted into a string
+    /// @return The string that was converted from the provided bytes32
+    function bytes32ToString(bytes32 x) private pure returns (string) {
+
+        bytes memory bytesString = new bytes(32);
+        uint charCount = 0;
+        for (uint j = 0; j < 32; j++) {
+            byte char = byte(bytes32(uint(x) * 2 ** (8 * j)));
+            if (char != 0) {
+                bytesString[charCount] = char;
+                charCount++;
+            }
+        }
+
+        bytes memory bytesStringTrimmed = new bytes(charCount);
+        for (j = 0; j < charCount; j++) {
+            bytesStringTrimmed[j] = bytesString[j];
+        }
+
+        return string(bytesStringTrimmed);
     }
 
 	/// @author Aaron Kendall
@@ -414,12 +476,51 @@ contract WonkaEngine {
     /// @return bytes32 that contains the name of the indexed Rule	
     function getRuleName(address ruler, uint idx) public view returns(bytes32) {
 
-        require((msg.sender == ruler) || (msg.sender == rulesMaster));
+        // require((msg.sender == ruler) || (msg.sender == rulesMaster));
 
         require(rulers[ruler].isValue);
 
 		return allRules[rulers[ruler].ruleSetId][idx].name;
 	}
+
+	/// @author Aaron Kendall
+    /// @notice Retrieves the a verbose description of the rules that will be invoked by the RuleSet owned by 'ruler'
+    /// @dev Should be used just for testing, since it's likely an expensive operation in terms of gas
+    /// @param ruler The owner of the RuleSet whose rules we want to examine
+    /// @return string that contains the verbose description of the rules in the RuleSet
+    function getRulePlan(address ruler) public view returns (string) {
+
+        require(rulers[ruler].isValue);
+
+        string memory ruleReport = "\n";
+
+        WonkaLib.WonkaRule[] memory targetRules = allRules[rulers[ruler].ruleSetId];
+
+        // Now collect the rules
+        for (uint idx = 0; idx < targetRules.length; idx++) {
+
+            if (uint(RuleTypes.IsEqual) == targetRules[idx].ruleType) {
+
+                if (targetRules[idx].targetAttr.isNumeric) { 
+                    ruleReport = strConcat(ruleReport, "\nAttribute(", bytes32ToString(targetRules[idx].targetAttr.attrName), ") must be (numeric) equal to ", targetRules[idx].ruleValue); 
+                } else {
+                    ruleReport = strConcat(ruleReport, "\nAttribute(", bytes32ToString(targetRules[idx].targetAttr.attrName), ") must be (string) equal to ", targetRules[idx].ruleValue); 
+                }
+
+            } else if (uint(RuleTypes.IsLessThan) == targetRules[idx].ruleType) {
+
+                ruleReport = strConcat(ruleReport, "\nAttribute(", bytes32ToString(targetRules[idx].targetAttr.attrName), ") must be less than ", targetRules[idx].ruleValue); 
+
+            } else if (uint(RuleTypes.IsGreaterThan) == targetRules[idx].ruleType) {
+
+                ruleReport = strConcat(ruleReport, "\nAttribute(", bytes32ToString(targetRules[idx].targetAttr.attrName), ") must be greater than ", targetRules[idx].ruleValue); 
+            }  
+        }
+
+        ruleReport = strConcat(ruleReport, "\n");
+
+        return ruleReport;
+    }    
 
 	/// @author Aaron Kendall
     /// @notice Retrieves the name of the RuleSet of 'ruler'
@@ -428,7 +529,7 @@ contract WonkaEngine {
     /// @return bytes32 that contains the name of the RuleSet belonging to 'ruler'
     function getRulesetName(address ruler) public view returns(bytes32) {
 
-        require((msg.sender == ruler) || (msg.sender == rulesMaster));
+        // require((msg.sender == ruler) || (msg.sender == rulesMaster));
 
         require(rulers[ruler].isValue);
 
@@ -447,5 +548,81 @@ contract WonkaEngine {
         require(rulers[ruler].isValue);
 
         (currentRecords[ruler])[key] = value;
+    }
+
+	/// @author Aaron Kendall
+    /// @notice This method will concatenate 5 strings into one
+    /// @dev Copied from a code snippet on StackOverflow by Bertani from Oraclize.  This method probably isn't gas-efficient, and it should probably only be used for testing.
+    /// @param _a The seed/base of the string concatenation
+    /// @param _b The second string to concatenate
+    /// @param _c The third string to concatenate
+    /// @param _d The fourth string to concatenate
+    /// @param _e The fifth string to concatenate
+    /// @return string that contains the aggregate of all strings that have been concatenated together
+    function strConcat(string _a, string _b, string _c, string _d, string _e) private pure returns (string) {
+
+        bytes memory _ba = bytes(_a);
+        bytes memory _bb = bytes(_b);
+        bytes memory _bc = bytes(_c);
+        bytes memory _bd = bytes(_d);
+        bytes memory _be = bytes(_e);
+        string memory abcde = new string(_ba.length + _bb.length + _bc.length + _bd.length + _be.length);
+        bytes memory babcde = bytes(abcde);
+        uint k = 0;
+        
+        for (uint i = 0; i < _ba.length; i++) {
+            babcde[k++] = _ba[i];
+        }
+
+        for (i = 0; i < _bb.length; i++) {
+            babcde[k++] = _bb[i];
+        }
+
+        for (i = 0; i < _bc.length; i++) {
+            babcde[k++] = _bc[i];
+        } 
+
+        for (i = 0; i < _bd.length; i++) {
+            babcde[k++] = _bd[i];
+        }
+
+        for (i = 0; i < _be.length; i++) { 
+            babcde[k++] = _be[i];
+        }
+
+        return string(babcde);
+    }
+
+	/// @author Aaron Kendall
+    /// @notice This method will concatenate 4 strings into one
+    /// @dev Copied from a code snippet on StackOverflow by Bertani from Oraclize.  This method probably isn't gas-efficient, and it should probably only be used for testing.
+    /// @param _a The seed/base of the string concatenation
+    /// @param _b The second string to concatenate
+    /// @param _c The third string to concatenate
+    /// @param _d The fourth string to concatenate
+    /// @return string that contains the aggregate of all strings that have been concatenated together
+    function strConcat(string _a, string _b, string _c, string _d) private pure returns (string) {
+        return strConcat(_a, _b, _c, _d, "");
+    }
+
+	/// @author Aaron Kendall
+    /// @notice This method will concatenate 3 strings into one
+    /// @dev Copied from a code snippet on StackOverflow by Bertani from Oraclize.  This method probably isn't gas-efficient, and it should probably only be used for testing.
+    /// @param _a The seed/base of the string concatenation
+    /// @param _b The second string to concatenate
+    /// @param _c The third string to concatenate
+    /// @return string that contains the aggregate of all strings that have been concatenated together
+    function strConcat(string _a, string _b, string _c) private pure returns (string) {
+        return strConcat(_a, _b, _c, "", "");
+    }
+
+	/// @author Aaron Kendall
+    /// @notice This method will concatenate 2 strings into one
+    /// @dev Copied from a code snippet on StackOverflow by Bertani from Oraclize.  This method probably isn't gas-efficient, and it should probably only be used for testing.
+    /// @param _a The seed/base of the string concatenation
+    /// @param _b The second string to concatenate
+    /// @return string that contains the aggregate of all strings that have been concatenated together
+    function strConcat(string _a, string _b) private pure returns (string) {
+        return strConcat(_a, _b, "", "", "");
     }
 }
