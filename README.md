@@ -50,10 +50,10 @@ $ truffle test
             }));
 ```
 
-...
+```
     // INSIDE THE TEST SCRIPT
     instance.addAttribute(web3.fromAscii('Language'), 64, 0, new String('ENG').valueOf(), true, false);
-...
+```
 
 For now, the engine automatically creates three Attributes in the engine's constructor, but that could be changed easily.
 
