@@ -1,12 +1,16 @@
 # EthgineLite
 
-A proof-of-concept business rules engine for the Ethereum platform that is inherently metadata-driven, written into the form of a smart contract using the Solidity language.  Basically, after providing a number of rules and populating a record, a user can submit the populated record for validation by the rules engine.
+A proof-of-concept business rules engine for the <a target="_blank" href="https://en.wikipedia.org/wiki/Ethereum">Ethereum</a> platform that is inherently metadata-driven, written into the form of a smart contract using the Solidity language.  Basically, after providing a number of rules and populating a record, a user can submit the populated record for validation by the rules engine.
 
 # Requirements
 
 * Basic knowledge of Ethereum and some experience with Javascript
 * An installation of <a target="_blank" href="http://truffleframework.com/docs/">Truffle</a> and a local blockchain (like <a target="_blank" href="http://truffleframework.com/ganache/">Ganache</a>)
 * A fair amount of patience and forgiveness
+
+# Disclaimer
+
+This prototype only serves as an example, and it should not even be considered an attempt at an actual implementation, since it has a number of shortcomings.  For example, in terms of <a target="blank" href="https://ethereum.stackexchange.com/questions/3/what-is-meant-by-the-term-gas">gas usage</a>, this contract can be somewhat expensive.
 
 # The Basics
 
@@ -72,6 +76,8 @@ As well as create the Rule itself:
 3.) Then, we need to populate our record (held within the contract instance for us) with the data:
 
 ```
+    // SINCE ETHEREUM HAS LIMITATIONS WHEN DEALING WITH DYNAMIC ARRAYS AND MAPPINGS, WE MUST KEEP AN ARRAY/MAPPING
+    // ON THE CONTRACT SIDE AND MANIPULATE IT FROM THE CLIENT
     instance.setValueOnRecord(accounts[0], web3.fromAscii('Title'), new String('The First Book').valueOf());
     instance.setValueOnRecord(accounts[0], web3.fromAscii('Price'), new String('0999').valueOf()); // in cents
     instance.setValueOnRecord(accounts[0], web3.fromAscii('PageAmount'), new String('289').valueOf());
