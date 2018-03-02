@@ -36,8 +36,12 @@ contract('WonkaEngine', function(accounts) {
     });
   });
   it("add the first RuleSet", function() {
-    return WonkaEngine.deployed().then(function(instance) {      
-      instance.addRuleSet(accounts[0], web3.fromAscii('ValidateProduct'));
+    return WonkaEngine.deployed().then(function(instance) {	    	    
+      instance.addRuleSet(accounts[0], web3.fromAscii('ValidateProduct'), true, false);
+	 
+      // Use this call when you want the Rules Engine to throw upon encountering an error
+      // instance.addRuleSet(accounts[0], web3.fromAscii('ValidateProduct'), true, true);
+	    
       console.log("Added the first RuleSet!");
     });
   });
@@ -130,10 +134,6 @@ contract('WonkaEngine', function(accounts) {
       console.log("Current record for owner(" + accounts[0] + ") is valid?  [" + recordValid + "]");      
     });
   });
-	
-  /*
-   * NOTE: Only run this section if you want to see the contract return an error (i.e., the set data fails the rules)
-   *
   it("set bad Value onto current record", function() {
     return WonkaEngine.deployed().then(function(instance) {
       instance.setValueOnRecord(accounts[0], web3.fromAscii('Price'), new String('0049').valueOf());
@@ -146,6 +146,5 @@ contract('WonkaEngine', function(accounts) {
     }).then(function(recordValid) {
       console.log("Current record for owner(" + accounts[0] + ") is valid?  [" + recordValid + "]");      
     });
-   */
 
 });
