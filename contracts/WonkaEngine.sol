@@ -71,6 +71,8 @@ library WonkaLib {
 
         bytes32     ruleSetId;
         // WonkaRule[] ruleSetCollection;
+        bool        andOp;
+        bool        failImmediately;
         bool        isValue;
     }
 
@@ -107,7 +109,7 @@ contract WonkaEngine {
 
     mapping(address => mapping(bytes32 => string)) currentRecords;
 
-	/// @author Aaron Kendall
+    /// @author Aaron Kendall
     /// @notice The engine's constructor
     /// @dev Some Attributes are created by default, but in future versions, Attributes can be created by the contract's user
     function WonkaEngine() public {
@@ -161,7 +163,7 @@ contract WonkaEngine {
         attrCounter = attributes.length + 1;
     }
 
-	/// @author Aaron Kendall
+    /// @author Aaron Kendall
     /// @notice This function will create an Attribute, which defines a data point that can be poulated on a user's record.  Only the RuleMaster (i.e., the contract instance's creator) can create a RuleSet for a user.
     /// @dev An Attribute can only be defined once.
     /// @param pAttrName The name of the new Attribute
@@ -195,18 +197,22 @@ contract WonkaEngine {
         attrMap[attributes[attributes.length-1].attrName] = attributes[attributes.length-1];
     }
 
-	/// @author Aaron Kendall
+    /// @author Aaron Kendall
     /// @notice This function will create a RuleSet, which is the container for a set of Rules created/owned by a user.  Only the RuleMaster (i.e., the contract instance's creator) can create a RuleSet for a user.
     /// @dev Users are currently allowed only one RuleSet.
     /// @param ruler The owner (i.e., the user's address) of the new RuleSet 
     /// @param ruleSetName The name given to the new RuleSet
+    /// @param useAndOperator Flag to indicate to use the 'AND' operator on rules if true and to use the 'OR' operator if false
+    /// @param flagFailImmediately Flag to indicate whether or not the first rule failure should cause the 'execute' function to throw
     /// @return 
-    function addRuleSet(address ruler, bytes32 ruleSetName) public {
-
+    function addRuleSet(address ruler, bytes32 ruleSetName, bool useAndOperator, bool flagFailImmediately) public {
+        // require((msg.sender == chairperson) && !voters[voter].voted && (voters[voter].weight == 0));
         require(msg.sender == rulesMaster);
 
         rulesets.push(WonkaLib.WonkaRuleSet({
                 ruleSetId: ruleSetName,
+                andOp: useAndOperator,
+                failImmediately: flagFailImmediately,
                 // ruleSetCollection: new WonkaLib.WonkaRule[](0),
                 isValue: true                
             }));
@@ -214,7 +220,7 @@ contract WonkaEngine {
         rulers[ruler] = rulesets[rulesets.length-1];
     }
 
-	/// @author Aaron Kendall
+    /// @author Aaron Kendall
     /// @notice This function will add a Rule to the RuleSet owned by 'ruler'.  Only 'ruler' or the RuleMaster can add a rule.
     /// @dev The type of rules are limited to the enum RuleTypes
     /// @param ruler The owner (i.e., the user's address) of the RuleSet to which we are adding a rule
@@ -369,7 +375,7 @@ contract WonkaEngine {
         return convertVal;
     }
 
-	/// @author Aaron Kendall
+    /// @author Aaron Kendall
     /// @notice This method will actually process the current record by invoking the RuleSet.  Before this method is called, all record data should be set and all rules should be added.
     /// @dev The efficiency (i.e., the rate of spent gas) of the method may not yet be optimal
     /// @param ruler The owner of the record and the RuleSet being invoked
@@ -383,15 +389,21 @@ contract WonkaEngine {
         WonkaLib.WonkaRule[] memory targetRules = allRules[rulers[ruler].ruleSetId];
 
         // require(attrNames.length == attrValues.length);
+        // executeSuccess = rulers[ruler].isValue;
 
-		// This call will make sure all the values in the ruler's record are valid instances of Attributes (like Price is actually numeric)
         checkRecordBeta(ruler, targetRules);
 
         uint testNumValue = 0;
         uint ruleNumValue = 0;
 
+        bool tempResult = false;
+        bool useAndOp = rulers[ruler].andOp;
+        bool failImmediately = rulers[ruler].failImmediately;        
+
         // Now invoke the rules
         for (uint idx = 0; idx < targetRules.length; idx++) {
+
+            tempResult = true;
 
             string memory tempValue = (currentRecords[ruler])[targetRules[idx].targetAttr.attrName];
 
@@ -403,34 +415,42 @@ contract WonkaEngine {
             if (uint(RuleTypes.IsEqual) == targetRules[idx].ruleType) {
 
                 if (targetRules[idx].targetAttr.isNumeric) {
-                    require(testNumValue == ruleNumValue);
+                    tempResult = (testNumValue == ruleNumValue);
                 } else {
-                    require(keccak256(tempValue) == keccak256(targetRules[idx].ruleValue));
+                    tempResult = (keccak256(tempValue) == keccak256(targetRules[idx].ruleValue));
                 }
 
             } else if (uint(RuleTypes.IsLessThan) == targetRules[idx].ruleType) {
 
                 if (targetRules[idx].targetAttr.isNumeric)
-                    require(testNumValue < ruleNumValue);
+                    tempResult = (testNumValue < ruleNumValue);
 
             } else if (uint(RuleTypes.IsGreaterThan) == targetRules[idx].ruleType) {
 
                 if (targetRules[idx].targetAttr.isNumeric)
-                    require(testNumValue > ruleNumValue);
+                    tempResult = (testNumValue > ruleNumValue);
             }  
+
+            if (failImmediately)
+                require(tempResult);
+
+            if (useAndOp)
+                executeSuccess = (executeSuccess && tempResult);
+            else
+                executeSuccess = (executeSuccess || tempResult);          
         }        
     }
 
-	/// @author Aaron Kendall
+    /// @author Aaron Kendall
     /// @notice Retrieves the name of the attribute at the index
     /// @dev Should be used just for testing
     /// @param idx The index of the Attribute being examined
     /// @return bytes32 that contains the name of the specified Attribute	
     function getAttributeName(uint idx) public view returns(bytes32) {
 		return attributes[idx].attrName;
-	}
+    }
 
-	/// @author Aaron Kendall
+    /// @author Aaron Kendall
     /// @notice Retrieves the value of the record that belongs to the user (i.e., 'ruler')
     /// @dev Should be used just for testing
     /// @param ruler The owner of the record
@@ -443,7 +463,7 @@ contract WonkaEngine {
         return (currentRecords[ruler])[key];
     }
 
-	/// @author Aaron Kendall
+    /// @author Aaron Kendall
     /// @notice Retrieves the value of the record that belongs to the user (i.e., 'ruler')
     /// @dev Should be used just for testing
     /// @param ruler The owner of the record
