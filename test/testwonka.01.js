@@ -146,5 +146,6 @@ contract('WonkaEngine', function(accounts) {
     }).then(function(recordValid) {
       console.log("Current record for owner(" + accounts[0] + ") is valid?  [" + recordValid + "]");      
     });
+  });
 
 });
