@@ -554,9 +554,24 @@ contract WonkaEngine {
         require(rulers[ruler].isValue);
 
         return rulers[ruler].ruleSetId;
-	}
+    }
+    
+    /// @author Aaron Kendall
+    /// @notice This method will alter the operator used to evaluate the final result of all the rules executed together (i.e., AND vs. OR)
+    /// @dev This method can only invoked for a RuleSet (whose ID is the owner's account ID) by its owner or the contract's owner.
+    /// @param ruler The owner of the RuleSet
+    /// @param flagUseAndOp Flag indicating whether to 'AND' the rules (i.e., true) or to 'OR' the rules (i.e., false)
+    /// @return	
+    function setRulesetEvalOp(address ruler, bool flagUseAndOp) public { 
 
-	/// @author Aaron Kendall
+        require((msg.sender == ruler) || (msg.sender == rulesMaster));
+
+        require(rulers[ruler].isValue);
+
+        rulers[ruler].andOp = flagUseAndOp;
+    }
+
+    /// @author Aaron Kendall
     /// @notice This method populates the record of 'ruler' with a value that represents an instance of an Attribute
     /// @dev This method does not yet check to see if the provided 'key' is the valid name of an Attribute.  Is it worth the gas?
     /// @param ruler The owner of the RuleSet
