@@ -147,5 +147,18 @@ contract('WonkaEngine', function(accounts) {
       console.log("Current record for owner(" + accounts[0] + ") is valid?  [" + recordValid + "]");      
     });
   });
+  it("change the eval operator from AND to OR for the RuleSet", function() {
+    return WonkaEngine.deployed().then(function(instance) {
+      instance.setRulesetEvalOp(accounts[0], false);
+      console.log("Updated the eval op for the RuleSet from AND to OR!");
+    });
+  });
+  it("run the business rules on the currently populated record", function() {
+    return WonkaEngine.deployed().then(function(instance) {
+      return instance.execute.call(accounts[0]);
+    }).then(function(recordValid) {
+      console.log("Current record for owner(" + accounts[0] + ") is valid?  [" + recordValid + "]");      
+    });
+  });
 
 });
